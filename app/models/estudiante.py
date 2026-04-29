@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from app.database import Base
 
 class Estudiante(Base):
@@ -9,3 +9,5 @@ class Estudiante(Base):
     apellido = Column(String)
     carrera = Column(String)
     email = Column(String)
+    # Relación con el usuario:
+    owner_id = Column(Integer, ForeignKey("usuarios.id"))
