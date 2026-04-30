@@ -1,4 +1,5 @@
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = window.location.origin;
+let usuarioLogueado = "";
 let editandoId = null;
 
 // ================= AUTENTICACIÓN =================
@@ -12,8 +13,19 @@ async function enviarCorreo() {
     btn.innerText = "Enviando...";
     btn.disabled = true;
 
+    mostrarMensaje("Procesando solicitud...", "success");
+
     try {
-        const res = await fetch(`${API_URL}/usuarios/login?correo=${encodeURIComponent(email)}`, { method: 'POST' });
+        let res = await fetch(`${API_URL}/usuarios/login?correo=${encodeURIComponent(email)}`, { method: 'POST' });
+
+        // Si no existe, lo crea automáticamente
+        if (res.status === 404) {
+            mostrarMensaje("Creando cuenta nueva...", "success");
+
+            await fetch(`${API_URL}/usuarios/registrar?correo=${encodeURIComponent(email)}`, { method: 'POST' });
+
+            res = await fetch(`${API_URL}/usuarios/login?correo=${encodeURIComponent(email)}`, { method: 'POST' });
+        }
 
         if (res.ok) {
             document.getElementById('step-email').classList.add('hidden');
@@ -23,15 +35,15 @@ async function enviarCorreo() {
 
             btn.innerText = "Código enviado ✔";
         } else {
-            mostrarMensaje("No se pudo enviar el código", "error");
-            btn.innerText = "Solicitar OTP";
+            mostrarMensaje("Error al obtener el código", "error");
             btn.disabled = false;
+            btn.innerText = "Solicitar OTP";
         }
 
     } catch (err) {
         mostrarMensaje("Error de conexión", "error");
-        btn.innerText = "Solicitar OTP";
         btn.disabled = false;
+        btn.innerText = "Solicitar OTP";
     }
 }
 
@@ -43,6 +55,8 @@ async function verificarCodigo() {
         const res = await fetch(`${API_URL}/usuarios/verificar?correo=${encodeURIComponent(email)}&otp=${otp}`, { method: 'POST' });
 
         if (res.ok) {
+            usuarioLogueado = email;
+
             document.getElementById('login-container').classList.add('hidden');
 
             const crud = document.getElementById('step-crud');
@@ -51,7 +65,7 @@ async function verificarCodigo() {
 
             cargarEstudiantes();
         } else {
-            mostrarMensaje("Código inválido", "error");
+            mostrarMensaje("Código incorrecto", "error");
         }
 
     } catch (err) {
@@ -96,7 +110,7 @@ async function cargarEstudiantes() {
     const tabla = document.getElementById('tabla-estudiantes');
 
     try {
-        const res = await fetch(`${API_URL}/api/estudiantes`);
+        const res = await fetch(`${API_URL}/api/estudiantes?correo=${encodeURIComponent(usuarioLogueado)}`);
         const data = await res.json();
 
         tabla.innerHTML = "";
@@ -109,12 +123,12 @@ async function cargarEstudiantes() {
                     <td class="px-6 py-4 font-semibold text-[#14b8a6]">${est.carrera}</td>
                     <td class="px-6 py-4">
                         <div class="flex justify-center gap-4">
-                            <button onclick='prepararEdicion(${est.id}, ${JSON.stringify(est.nombre)}, ${JSON.stringify(est.apellido)}, ${JSON.stringify(est.carrera)}, ${JSON.stringify(est.email)})' 
-                                class="flex items-center gap-2 text-blue-400 hover:text-blue-300 font-bold text-xs transition-all">
+                            <button onclick='prepararEdicion(${est.id}, ${JSON.stringify(est.nombre)}, ${JSON.stringify(est.apellido)}, ${JSON.stringify(est.carrera)}, ${JSON.stringify(est.email)})'
+                                class="flex items-center gap-2 text-blue-400 hover:text-blue-300 font-bold text-xs">
                                 ✏️ Editar
                             </button>
-                            <button onclick="eliminarEstudiante(${est.id})" 
-                                class="flex items-center gap-2 text-red-400 hover:text-red-300 font-bold text-xs transition-all">
+                            <button onclick="eliminarEstudiante(${est.id})"
+                                class="flex items-center gap-2 text-red-400 hover:text-red-300 font-bold text-xs">
                                 🗑️ Eliminar
                             </button>
                         </div>
@@ -124,22 +138,23 @@ async function cargarEstudiantes() {
 
     } catch (e) {
         console.error(e);
+        mostrarMensaje("Error al cargar estudiantes", "error");
     }
 }
 
 async function guardarEstudiante() {
-    const nombre = document.getElementById('form-nombre').value;
-    const apellido = document.getElementById('form-apellido').value;
-    const carrera = document.getElementById('form-carrera').value;
-    const email = document.getElementById('form-email').value;
+    const n = document.getElementById('form-nombre').value;
+    const a = document.getElementById('form-apellido').value;
+    const c = document.getElementById('form-carrera').value;
+    const e = document.getElementById('form-email').value;
 
-    let url = `${API_URL}/api/estudiantes?nombre=${nombre}&apellido=${apellido}&carrera=${carrera}&email=${email}`;
-    let metodo = 'POST';
+    const params = `nombre=${n}&apellido=${a}&carrera=${c}&email=${e}&admin_correo=${encodeURIComponent(usuarioLogueado)}`;
 
-    if (editandoId) {
-        url = `${API_URL}/api/estudiantes/${editandoId}?nombre=${nombre}&apellido=${apellido}&carrera=${carrera}&email=${email}`;
-        metodo = 'PUT';
-    }
+    const url = editandoId
+        ? `${API_URL}/api/estudiantes/${editandoId}?${params}`
+        : `${API_URL}/api/estudiantes?${params}`;
+
+    const metodo = editandoId ? 'PUT' : 'POST';
 
     const res = await fetch(url, { method: metodo });
 
@@ -152,8 +167,8 @@ async function guardarEstudiante() {
 }
 
 async function eliminarEstudiante(id) {
-    if (confirm("¿Seguro que deseas eliminar este registro?")) {
-        await fetch(`${API_URL}/api/estudiantes/${id}`, { method: 'DELETE' });
+    if (confirm("¿Estás seguro?")) {
+        await fetch(`${API_URL}/api/estudiantes/${id}?admin_correo=${encodeURIComponent(usuarioLogueado)}`, { method: 'DELETE' });
         cargarEstudiantes();
     }
 }

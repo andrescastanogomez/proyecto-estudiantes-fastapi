@@ -1,45 +1,50 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.estudiante import Estudiante 
+from app.models.estudiante import Estudiante
+from app.models.usuario import Usuario
 
-router = APIRouter()
+router = APIRouter(tags=["Estudiantes"])
 
-# 1. OBTENER TODOS LOS ESTUDIANTES (READ)
 @router.get("/estudiantes")
-def obtener_estudiantes(db: Session = Depends(get_db)):
-    return db.query(Estudiante).all()
+def obtener_mis_estudiantes(correo: str, db: Session = Depends(get_db)):
+    admin = db.query(Usuario).filter(Usuario.correo == correo).first()
+    if not admin:
+        return []
+    return db.query(Estudiante).filter(Estudiante.owner_id == admin.id).all()
 
-# 2. CREAR UN ESTUDIANTE (CREATE)
 @router.post("/estudiantes")
-def crear_estudiante(nombre: str, apellido: str, carrera: str, email: str, db: Session = Depends(get_db)):
-    nuevo = Estudiante(nombre=nombre, apellido=apellido, carrera=carrera, email=email)
+def crear_estudiante(nombre: str, apellido: str, carrera: str, email: str, admin_correo: str, db: Session = Depends(get_db)):
+    admin = db.query(Usuario).filter(Usuario.correo == admin_correo).first()
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin no encontrado")
+    
+    nuevo = Estudiante(nombre=nombre, apellido=apellido, carrera=carrera, email=email, owner_id=admin.id)
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
     return nuevo
 
-# 3. ACTUALIZAR ESTUDIANTE (UPDATE) - ¡ESTO ERA LO QUE FALTABA!
 @router.put("/estudiantes/{id}")
-def actualizar_estudiante(id: int, nombre: str, apellido: str, carrera: str, email: str, db: Session = Depends(get_db)):
-    estudiante = db.query(Estudiante).filter(Estudiante.id == id).first()
-    if not estudiante:
-        raise HTTPException(status_code=404, detail="Estudiante no encontrado")
+def actualizar_estudiante(id: int, nombre: str, apellido: str, carrera: str, email: str, admin_correo: str, db: Session = Depends(get_db)):
+    admin = db.query(Usuario).filter(Usuario.correo == admin_correo).first()
+    est = db.query(Estudiante).filter(Estudiante.id == id, Estudiante.owner_id == admin.id).first()
     
-    estudiante.nombre = nombre
-    estudiante.apellido = apellido
-    estudiante.carrera = carrera
-    estudiante.email = email
+    if not est:
+        raise HTTPException(status_code=404, detail="No encontrado")
     
+    est.nombre, est.apellido, est.carrera, est.email = nombre, apellido, carrera, email
     db.commit()
-    return {"message": "Actualizado con éxito"}
+    return {"status": "actualizado"}
 
-# 4. ELIMINAR ESTUDIANTE (DELETE)
 @router.delete("/estudiantes/{id}")
-def eliminar_estudiante(id: int, db: Session = Depends(get_db)):
-    estudiante = db.query(Estudiante).filter(Estudiante.id == id).first()
-    if not estudiante:
-        raise HTTPException(status_code=404, detail="Estudiante no encontrado")
-    db.delete(estudiante)
+def eliminar_estudiante(id: int, admin_correo: str, db: Session = Depends(get_db)):
+    admin = db.query(Usuario).filter(Usuario.correo == admin_correo).first()
+    est = db.query(Estudiante).filter(Estudiante.id == id, Estudiante.owner_id == admin.id).first()
+    
+    if not est:
+        raise HTTPException(status_code=404, detail="No encontrado")
+    
+    db.delete(est)
     db.commit()
-    return {"message": "Eliminado con éxito"}
+    return {"status": "eliminado"}
