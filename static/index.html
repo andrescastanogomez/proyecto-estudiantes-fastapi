@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,8 +19,9 @@
 <body class="bg-[#0f172a] text-slate-200 min-h-screen flex items-center justify-center p-4">
 
     <!-- LOGIN -->
-    <div id="login-container" class="fade-in card-hover bg-[#1e293b] p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
-        
+    <div id="login-container"
+        class="fade-in card-hover bg-[#1e293b] p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
+
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-white mb-2">Bienvenido</h1>
             <p class="text-slate-400">Ingresa a tu panel administrativo</p>
@@ -29,7 +31,7 @@
         <div id="step-email" class="space-y-4">
             <div>
                 <label class="block text-sm font-medium mb-1">Correo Electrónico</label>
-                <input type="email" id="email" placeholder="nombre@correo.com" 
+                <input type="email" id="email" placeholder="nombre@correo.com"
                     class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all">
             </div>
 
@@ -47,7 +49,7 @@
                     class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-4 py-3 text-center text-2xl tracking-widest focus:outline-none focus:ring-2 focus:ring-teal-500">
             </div>
 
-            <button onclick="verificarCodigo()" 
+            <button onclick="verificarCodigo()"
                 class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-lg transition-all">
                 Verificar e Ingresar
             </button>
@@ -60,7 +62,7 @@
     <div id="step-crud" class="hidden w-full max-w-5xl fade-in">
 
         <div class="card-hover bg-[#1e293b] rounded-2xl shadow-2xl border border-slate-700 overflow-hidden">
-            
+
             <!-- HEADER -->
             <div class="p-8 border-b border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -69,79 +71,94 @@
                 </div>
 
                 <div class="flex gap-3">
-                    <button onclick="cerrarSesion()" 
+                    <button onclick="cerrarSesion()"
                         class="bg-slate-700 hover:bg-slate-600 px-5 py-2.5 rounded-lg font-semibold transition-all">
                         Cerrar Sesión
                     </button>
 
-                    <button onclick="abrirModal()" 
+                    <button onclick="abrirModal()"
                         class="bg-teal-600 hover:bg-teal-500 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-all shadow-lg">
                         <i class="fas fa-plus"></i> NUEVO ESTUDIANTE
                     </button>
                 </div>
             </div>
+            <!-- ESTADÍSTICAS RÁPIDAS (Nuevo) -->
+            <div class="px-8 py-4 bg-slate-800/30 border-b border-slate-700 flex items-center gap-4">
+                <div class="bg-teal-500/10 p-3 rounded-lg">
+                    <i class="fas fa-users text-teal-400 text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-slate-400 text-xs uppercase tracking-widest font-semibold">Total Registrados</p>
+                    <p id="contador-total" class="text-2xl font-bold text-white leading-none">0</p>
+                </div>
+            </div>
 
             <!-- TABLA -->
             <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-800/50 text-teal-400 text-xs uppercase tracking-wider">
-                        <tr>
-                            <th class="px-8 py-4">Nombre</th>
-                            <th class="px-8 py-4">Apellido</th>
-                            <th class="px-8 py-4">Carrera</th>
-                            <th class="px-8 py-4 text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-estudiantes" class="divide-y divide-slate-700"></tbody>
-                </table>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- MODAL -->
-    <div id="modal-estudiante" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-
-        <div class="fade-in bg-[#1e293b] w-full max-w-md rounded-2xl border border-slate-700 shadow-2xl">
-
-            <div class="p-6 border-b border-slate-700">
-                <h3 id="modal-titulo" class="text-xl font-bold text-white">Nuevo Estudiante</h3>
-            </div>
-
-            <form class="p-6 space-y-4" onsubmit="event.preventDefault(); guardarEstudiante();">
-
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="form-nombre" placeholder="Nombre" required
-                        class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 outline-none">
-
-                    <input type="text" id="form-apellido" placeholder="Apellido" required
-                        class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 outline-none">
+                ...
+                <!-- TABLA -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-800/50 text-teal-400 text-xs uppercase tracking-wider">
+                            <tr>
+                                <th class="px-8 py-4">Nombre</th>
+                                <th class="px-8 py-4">Apellido</th>
+                                <th class="px-8 py-4">Carrera</th>
+                                <th class="px-8 py-4 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-estudiantes" class="divide-y divide-slate-700"></tbody>
+                    </table>
                 </div>
 
-                <input type="text" id="form-carrera" placeholder="Carrera" required
-                    class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 outline-none">
+            </div>
+        </div>
 
-                <input type="email" id="form-email" placeholder="Email" required
-                    class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 outline-none">
+        <!-- MODAL -->
+        <div id="modal-estudiante"
+            class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
 
-                <div class="flex justify-end gap-3 mt-6">
-                    <button type="button" onclick="cerrarModal()" 
-                        class="px-4 py-2 text-slate-400 hover:text-white transition-colors">
-                        Cancelar
-                    </button>
+            <div class="fade-in bg-[#1e293b] w-full max-w-md rounded-2xl border border-slate-700 shadow-2xl">
 
-                    <button type="submit" 
-                        class="bg-teal-600 hover:bg-teal-500 px-6 py-2 rounded-lg font-bold text-white shadow-lg transition-all">
-                        Guardar
-                    </button>
+                <div class="p-6 border-b border-slate-700">
+                    <h3 id="modal-titulo" class="text-xl font-bold text-white">Nuevo Estudiante</h3>
                 </div>
 
-            </form>
-        </div>
-    </div>
+                <form class="p-6 space-y-4" onsubmit="event.preventDefault(); guardarEstudiante();">
 
-    <!-- JS -->
-    <script src="/static/script.js"></script>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="form-nombre" placeholder="Nombre" required
+                            class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 outline-none">
+
+                        <input type="text" id="form-apellido" placeholder="Apellido" required
+                            class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 outline-none">
+                    </div>
+
+                    <input type="text" id="form-carrera" placeholder="Carrera" required
+                        class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 outline-none">
+
+                    <input type="email" id="form-email" placeholder="Email" required
+                        class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 outline-none">
+
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" onclick="cerrarModal()"
+                            class="px-4 py-2 text-slate-400 hover:text-white transition-colors">
+                            Cancelar
+                        </button>
+
+                        <button type="submit"
+                            class="bg-teal-600 hover:bg-teal-500 px-6 py-2 rounded-lg font-bold text-white shadow-lg transition-all">
+                            Guardar
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- JS -->
+        <script src="/static/script.js"></script>
 
 </body>
+
 </html>

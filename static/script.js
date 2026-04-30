@@ -200,3 +200,19 @@ function prepararEdicion(id, nombre, apellido, carrera, email) {
 
     abrirModal();
 }
+async function actualizarContador() {
+    const correo = localStorage.getItem("userEmail"); // Asegúrate de que guardas el correo al loguearte
+    if (!correo) return;
+
+    try {
+        const resp = await fetch(`/estudiantes/conteo?admin_correo=${correo}`);
+        const data = await resp.json();
+        document.getElementById("contador-total").innerText = data.total;
+    } catch (error) {
+        console.error("Error al obtener el conteo:", error);
+    }
+}
+
+// LLAMADA IMPORTANTE:
+// Agrega actualizarContador(); dentro de tu función de cargarEstudiantes() 
+// y también al final de guardarEstudiante() para que el número suba apenas guardes.
