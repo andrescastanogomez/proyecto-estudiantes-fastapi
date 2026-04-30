@@ -212,7 +212,14 @@ async function actualizarContador() {
         console.error("Error al obtener el conteo:", error);
     }
 }
+function filtrarTabla() {
+    const texto = document.getElementById("buscador").value.toLowerCase();
+    const filas = document.querySelectorAll("#tabla-estudiantes tr");
 
-// LLAMADA IMPORTANTE:
-// Agrega actualizarContador(); dentro de tu función de cargarEstudiantes() 
-// y también al final de guardarEstudiante() para que el número suba apenas guardes.
+    filas.forEach(fila => {
+        const contenido = fila.textContent.toLowerCase();
+        // Si el texto coincide, muestra la fila; si no, la oculta
+        fila.style.display = contenido.includes(texto) ? "" : "none";
+    });
+}
+
