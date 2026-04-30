@@ -4,17 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FastAPI CRUD Estudiantes</title>
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- CSS PERSONAL -->
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
+
 <body class="bg-[#0f172a] flex flex-col items-center justify-center min-h-screen font-sans p-4">
 
     <!-- LOGIN CONTAINER -->
-    <div id="login-container" class="bg-[#1e293b] p-10 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
+    <div id="login-container" class="fade-in card-hover bg-[#1e293b] p-10 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
         <h2 class="text-2xl font-bold text-white text-center mb-8">Acceso Administrativo</h2>
         
         <div id="step-email">
             <input type="email" id="email" placeholder="Correo electrónico" 
                 class="w-full p-3 bg-[#0f172a] border border-slate-600 rounded-lg mb-6 text-white focus:border-teal-500 outline-none transition-all">
+
             <button onclick="enviarCorreo()" id="btn-envio" 
                 class="w-full bg-[#0d9488] hover:bg-[#0f766e] text-white p-3 rounded-lg font-bold transition-all shadow-lg">
                 Solicitar OTP
@@ -24,6 +31,7 @@
         <div id="step-otp" class="hidden">
             <input type="text" id="otp" placeholder="Código de 6 dígitos" 
                 class="w-full p-3 bg-[#0f172a] border border-[#0d9488] rounded-lg mb-6 text-center text-xl tracking-widest text-teal-400 outline-none">
+
             <button onclick="verificarCodigo()" 
                 class="w-full bg-white hover:bg-slate-200 text-slate-900 p-3 rounded-lg font-bold transition-all">
                 Verificar e Ingresar
@@ -34,17 +42,22 @@
     </div>
 
     <!-- CRUD PANEL -->
-    <div id="step-crud" class="hidden w-full max-w-5xl bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700">
+    <div id="step-crud" class="fade-in hidden card-hover w-full max-w-5xl bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700">
+        
         <div class="flex justify-between items-center mb-8">
             <div>
                 <h2 class="text-2xl font-bold text-white">Gestión de Estudiantes</h2>
                 <p class="text-slate-400 text-sm">Panel administrativo de registros</p>
             </div>
+
             <div class="flex gap-3">
-                <button onclick="cerrarSesion()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg font-bold transition-all border border-slate-500">
+                <button onclick="cerrarSesion()" 
+                    class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg font-bold transition-all border border-slate-500">
                     Cerrar Sesión
                 </button>
-                <button onclick="abrirModal()" class="bg-[#0d9488] hover:bg-[#0f766e] text-white px-6 py-2 rounded-lg font-bold transition-all shadow-md">
+
+                <button onclick="abrirModal()" 
+                    class="bg-[#0d9488] hover:bg-[#0f766e] text-white px-6 py-2 rounded-lg font-bold transition-all shadow-md">
                     + NUEVO ESTUDIANTE
                 </button>
             </div>
@@ -67,21 +80,43 @@
 
     <!-- MODAL -->
     <div id="modal-estudiante" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center z-50">
-        <div class="bg-[#1e293b] p-8 rounded-2xl w-full max-w-md border border-slate-700 shadow-2xl">
-            <h3 id="modal-titulo" class="text-xl font-bold text-white mb-6">Registrar Estudiante</h3>
+        
+        <div class="fade-in bg-[#1e293b] p-8 rounded-2xl w-full max-w-md border border-slate-700 shadow-2xl">
+            
+            <h3 id="modal-titulo" class="text-xl font-bold text-white mb-6">
+                Registrar Estudiante
+            </h3>
+
             <div class="space-y-4">
-                <input type="text" id="form-nombre" placeholder="Nombre" class="w-full p-2 bg-[#0f172a] border border-slate-600 rounded text-white outline-none focus:border-teal-500">
-                <input type="text" id="form-apellido" placeholder="Apellido" class="w-full p-2 bg-[#0f172a] border border-slate-600 rounded text-white outline-none focus:border-teal-500">
-                <input type="text" id="form-carrera" placeholder="Carrera" class="w-full p-2 bg-[#0f172a] border border-slate-600 rounded text-white outline-none focus:border-teal-500">
-                <input type="email" id="form-email" placeholder="Email" class="w-full p-2 bg-[#0f172a] border border-slate-600 rounded text-white outline-none focus:border-teal-500">
+                <input type="text" id="form-nombre" placeholder="Nombre"
+                    class="w-full p-2 bg-[#0f172a] border border-slate-600 rounded text-white outline-none focus:border-teal-500">
+
+                <input type="text" id="form-apellido" placeholder="Apellido"
+                    class="w-full p-2 bg-[#0f172a] border border-slate-600 rounded text-white outline-none focus:border-teal-500">
+
+                <input type="text" id="form-carrera" placeholder="Carrera"
+                    class="w-full p-2 bg-[#0f172a] border border-slate-600 rounded text-white outline-none focus:border-teal-500">
+
+                <input type="email" id="form-email" placeholder="Email"
+                    class="w-full p-2 bg-[#0f172a] border border-slate-600 rounded text-white outline-none focus:border-teal-500">
             </div>
+
             <div class="flex justify-end gap-3 mt-8">
-                <button onclick="cerrarModal()" class="text-slate-400 hover:text-white px-4 py-2 transition-colors">Cancelar</button>
-                <button onclick="guardarEstudiante()" class="bg-[#0d9488] hover:bg-[#0f766e] text-white px-6 py-2 rounded-lg font-bold transition-all">Guardar</button>
+                <button onclick="cerrarModal()" 
+                    class="text-slate-400 hover:text-white px-4 py-2 transition-colors">
+                    Cancelar
+                </button>
+
+                <button onclick="guardarEstudiante()" 
+                    class="bg-[#0d9488] hover:bg-[#0f766e] text-white px-6 py-2 rounded-lg font-bold transition-all">
+                    Guardar
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- JS -->
     <script src="/static/script.js"></script>
+
 </body>
 </html>
