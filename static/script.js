@@ -18,28 +18,22 @@ async function enviarCorreo() {
     try {
         let res = await fetch(`${API_URL}/usuarios/login?correo=${encodeURIComponent(email)}`, { method: 'POST' });
 
-        // Si no existe, lo crea automáticamente
         if (res.status === 404) {
             mostrarMensaje("Creando cuenta nueva...", "success");
-
             await fetch(`${API_URL}/usuarios/registrar?correo=${encodeURIComponent(email)}`, { method: 'POST' });
-
             res = await fetch(`${API_URL}/usuarios/login?correo=${encodeURIComponent(email)}`, { method: 'POST' });
         }
 
         if (res.ok) {
             document.getElementById('step-email').classList.add('hidden');
             document.getElementById('step-otp').classList.remove('hidden');
-
             mostrarMensaje("Código enviado con éxito 📩", "success");
-
             btn.innerText = "Código enviado ✔";
         } else {
             mostrarMensaje("Error al obtener el código", "error");
             btn.disabled = false;
             btn.innerText = "Solicitar OTP";
         }
-
     } catch (err) {
         mostrarMensaje("Error de conexión", "error");
         btn.disabled = false;
@@ -55,19 +49,17 @@ async function verificarCodigo() {
         const res = await fetch(`${API_URL}/usuarios/verificar?correo=${encodeURIComponent(email)}&otp=${otp}`, { method: 'POST' });
 
         if (res.ok) {
-            usuarioLogueado = email;
-
+            usuarioLogueado = email; // Se guarda el correo del admin
             document.getElementById('login-container').classList.add('hidden');
-
             const crud = document.getElementById('step-crud');
             crud.classList.remove('hidden');
             crud.classList.add('fade-in');
 
             cargarEstudiantes();
+            actualizarContador(); // <-- Llamada inicial al loguearse
         } else {
             mostrarMensaje("Código incorrecto", "error");
         }
-
     } catch (err) {
         mostrarMensaje("Error al verificar", "error");
     }
@@ -80,23 +72,20 @@ function cerrarSesion() {
     document.getElementById('login-container').classList.remove('hidden');
     document.getElementById('step-email').classList.remove('hidden');
     document.getElementById('step-otp').classList.add('hidden');
-
     document.getElementById('btn-envio').innerText = "Solicitar OTP";
     document.getElementById('btn-envio').disabled = false;
-
     document.getElementById('email').value = "";
     document.getElementById('otp').value = "";
     document.getElementById('mensaje').innerText = "";
+    usuarioLogueado = ""; 
 }
 
 // ================= MENSAJES =================
 
 function mostrarMensaje(texto, tipo) {
     const m = document.getElementById('mensaje');
-
     m.innerText = texto;
     m.className = "mt-4 text-center text-sm font-medium";
-
     if (tipo === "success") {
         m.classList.add("success");
     } else {
@@ -108,11 +97,9 @@ function mostrarMensaje(texto, tipo) {
 
 async function cargarEstudiantes() {
     const tabla = document.getElementById('tabla-estudiantes');
-
     try {
         const res = await fetch(`${API_URL}/api/estudiantes?correo=${encodeURIComponent(usuarioLogueado)}`);
         const data = await res.json();
-
         tabla.innerHTML = "";
 
         data.forEach(est => {
@@ -135,6 +122,8 @@ async function cargarEstudiantes() {
                     </td>
                 </tr>`;
         });
+        
+        actualizarContador(); // Mantiene el número al día al cargar la tabla
 
     } catch (e) {
         console.error(e);
@@ -149,27 +138,34 @@ async function guardarEstudiante() {
     const e = document.getElementById('form-email').value;
 
     const params = `nombre=${n}&apellido=${a}&carrera=${c}&email=${e}&admin_correo=${encodeURIComponent(usuarioLogueado)}`;
-
-    const url = editandoId
-        ? `${API_URL}/api/estudiantes/${editandoId}?${params}`
-        : `${API_URL}/api/estudiantes?${params}`;
-
+    const url = editandoId ? `${API_URL}/api/estudiantes/${editandoId}?${params}` : `${API_URL}/api/estudiantes?${params}`;
     const metodo = editandoId ? 'PUT' : 'POST';
 
-    const res = await fetch(url, { method: metodo });
-
-    if (res.ok) {
-        cerrarModal();
-        cargarEstudiantes();
-    } else {
-        mostrarMensaje("Error al guardar", "error");
+    try {
+        const res = await fetch(url, { method: metodo });
+        if (res.ok) {
+            cerrarModal();
+            cargarEstudiantes();
+            actualizarContador(); // <-- El contador se actualiza al crear o editar
+        } else {
+            mostrarMensaje("Error al guardar", "error");
+        }
+    } catch (error) {
+        mostrarMensaje("Error de red al guardar", "error");
     }
 }
 
 async function eliminarEstudiante(id) {
     if (confirm("¿Estás seguro?")) {
-        await fetch(`${API_URL}/api/estudiantes/${id}?admin_correo=${encodeURIComponent(usuarioLogueado)}`, { method: 'DELETE' });
-        cargarEstudiantes();
+        try {
+            const res = await fetch(`${API_URL}/api/estudiantes/${id}?admin_correo=${encodeURIComponent(usuarioLogueado)}`, { method: 'DELETE' });
+            if (res.ok) {
+                cargarEstudiantes();
+                actualizarContador(); // <-- El contador baja al eliminar
+            }
+        } catch (error) {
+            console.error("Error al eliminar:", error);
+        }
     }
 }
 
@@ -182,44 +178,44 @@ function abrirModal() {
 function cerrarModal() {
     document.getElementById('modal-estudiante').classList.add('hidden');
     editandoId = null;
-
     document.getElementById('modal-titulo').innerText = "Registrar Estudiante";
-
     document.querySelectorAll('#modal-estudiante input').forEach(i => i.value = "");
 }
 
 function prepararEdicion(id, nombre, apellido, carrera, email) {
     editandoId = id;
-
     document.getElementById('modal-titulo').innerText = "Editar Estudiante";
-
     document.getElementById('form-nombre').value = nombre;
     document.getElementById('form-apellido').value = apellido;
     document.getElementById('form-carrera').value = carrera;
     document.getElementById('form-email').value = email;
-
     abrirModal();
 }
+
 async function actualizarContador() {
-    const correo = localStorage.getItem("userEmail"); // Asegúrate de que guardas el correo al loguearte
-    if (!correo) return;
+    // CAMBIO CLAVE: Usar la variable usuarioLogueado en lugar de localStorage
+    if (!usuarioLogueado) return;
 
     try {
-        const resp = await fetch(`/estudiantes/conteo?admin_correo=${correo}`);
-        const data = await resp.json();
-        document.getElementById("contador-total").innerText = data.total;
+        const response = await fetch(`${API_URL}/api/estudiantes/conteo?admin_correo=${encodeURIComponent(usuarioLogueado)}`);
+        const data = await response.json();
+        
+        const contadorElemento = document.getElementById("total-registrados"); 
+        if (contadorElemento) {
+            // Animación simple: si el dato es nuevo, actualizamos el texto
+            contadorElemento.innerText = data.total;
+        }
     } catch (error) {
         console.error("Error al obtener el conteo:", error);
     }
 }
+
 function filtrarTabla() {
     const texto = document.getElementById("buscador").value.toLowerCase();
     const filas = document.querySelectorAll("#tabla-estudiantes tr");
 
     filas.forEach(fila => {
         const contenido = fila.textContent.toLowerCase();
-        // Si el texto coincide, muestra la fila; si no, la oculta
         fila.style.display = contenido.includes(texto) ? "" : "none";
     });
 }
-
