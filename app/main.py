@@ -6,14 +6,14 @@ from fastapi.responses import FileResponse
 from app.controllers import estudiante_controller, usuario_controller
 from app.database import engine, Base
 
-# Solución para Windows: Forzar MIME types
+# Forzar tipos MIME para evitar errores de carga en Windows/Navegadores
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
 
-# Crear tablas
+# Crear las tablas en la base de datos de Render al iniciar
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Proyecto Estudiantes OTP")
+app = FastAPI(title="Sistema Gestión Estudiantes OTP")
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,15 +23,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 1. API Routers
+# --- RUTAS DE LA API ---
+# El prefijo /usuarios se suma a las rutas del controlador (ej: /usuarios/login)
 app.include_router(usuario_controller.router, prefix="/usuarios", tags=["Usuarios"])
 app.include_router(estudiante_controller.router, prefix="/api", tags=["Estudiantes"])
 
-# 2. Montar archivos estáticos
-# IMPORTANTE: La carpeta 'static' debe existir en la raíz del proyecto
+# --- ARCHIVOS ESTÁTICOS ---
+# Monta la carpeta static para que Render encuentre el CSS y JS
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# 3. Servir el Index
 @app.get("/")
 async def read_index():
     return FileResponse("static/index.html")
