@@ -143,7 +143,25 @@ async function guardarEstudiante() {
     const c = document.getElementById('form-carrera').value;
     const e = document.getElementById('form-email').value;
 
-    const params = `nombre=${n}&apellido=${a}&carrera=${c}&email=${e}&admin_correo=${encodeURIComponent(usuarioLogueado)}`;
+    const nombre = n.trim();
+    const apellido = a.trim();
+    const carrera = c.trim();
+    const email = e.trim();
+
+    if (!nombre || !apellido || !carrera || !email) {
+        return mostrarMensaje("Todos los campos son obligatorios", "error");
+    }
+
+    if (nombre.length < 2 || apellido.length < 2) {
+        return mostrarMensaje("Nombre y apellido deben tener al menos 2 caracteres", "error");
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return mostrarMensaje("Email inválido", "error");
+    }
+
+    const params = `nombre=${nombre}&apellido=${apellido}&carrera=${carrera}&email=${email}&admin_correo=${encodeURIComponent(usuarioLogueado)}`;
 
     const url = editandoId
         ? `${API_URL}/api/estudiantes/${editandoId}?${params}`
@@ -157,6 +175,7 @@ async function guardarEstudiante() {
         if (res.ok) {
             cerrarModal();
             await cargarEstudiantes();
+            mostrarMensaje("Estudiante guardado correctamente", "success");
         } else {
             mostrarMensaje("Error al guardar", "error");
         }
