@@ -48,3 +48,12 @@ def eliminar_estudiante(id: int, admin_correo: str, db: Session = Depends(get_db
     db.delete(est)
     db.commit()
     return {"status": "eliminado"}
+@router.get("/estudiantes/conteo")
+def obtener_conteo(admin_correo: str, db: Session = Depends(get_db)):
+    # Contamos cuántos estudiantes pertenecen a este admin
+    admin = db.query(Usuario).filter(Usuario.correo == admin_correo.lower().strip()).first()
+    if not admin:
+        return {"total": 0}
+    
+    total = db.query(Estudiante).filter(Estudiante.owner_id == admin.id).count()
+    return {"total": total}

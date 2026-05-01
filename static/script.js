@@ -18,9 +18,7 @@ async function enviarCorreo() {
 
         if (res.status === 404) {
             mostrarMensaje("Creando cuenta nueva...", "success");
-
             await fetch(`${API_URL}/usuarios/registrar?correo=${encodeURIComponent(email)}`, { method: 'POST' });
-
             res = await fetch(`${API_URL}/usuarios/login?correo=${encodeURIComponent(email)}`, { method: 'POST' });
         }
 
@@ -29,7 +27,6 @@ async function enviarCorreo() {
             document.getElementById('step-otp').classList.remove('hidden');
 
             mostrarMensaje("Código enviado con éxito 📩", "success");
-
             btn.innerText = "Código enviado ✔";
         } else {
             mostrarMensaje("Error al obtener el código", "error");
@@ -53,6 +50,7 @@ async function verificarCodigo() {
 
         if (res.ok) {
             usuarioLogueado = email;
+            localStorage.setItem("usuario", email);
 
             document.getElementById('login-container').classList.add('hidden');
 
@@ -71,6 +69,8 @@ async function verificarCodigo() {
 }
 
 function cerrarSesion() {
+    localStorage.removeItem("usuario");
+
     document.getElementById('step-crud').classList.add('hidden');
     document.getElementById('login-container').classList.remove('hidden');
     document.getElementById('step-email').classList.remove('hidden');
@@ -82,6 +82,8 @@ function cerrarSesion() {
     document.getElementById('email').value = "";
     document.getElementById('otp').value = "";
     document.getElementById('mensaje').innerText = "";
+
+    usuarioLogueado = "";
 }
 
 function mostrarMensaje(texto, tipo) {
@@ -127,6 +129,8 @@ async function cargarEstudiantes() {
                 </tr>`;
         });
 
+        actualizarContador();
+
     } catch (e) {
         console.error(e);
         mostrarMensaje("Error al cargar estudiantes", "error");
@@ -147,20 +151,33 @@ async function guardarEstudiante() {
 
     const metodo = editandoId ? 'PUT' : 'POST';
 
-    const res = await fetch(url, { method: metodo });
+    try {
+        const res = await fetch(url, { method: metodo });
 
-    if (res.ok) {
-        cerrarModal();
-        cargarEstudiantes();
-    } else {
-        mostrarMensaje("Error al guardar", "error");
+        if (res.ok) {
+            cerrarModal();
+            await cargarEstudiantes();
+        } else {
+            mostrarMensaje("Error al guardar", "error");
+        }
+
+    } catch (error) {
+        mostrarMensaje("Error de red al guardar", "error");
     }
 }
 
 async function eliminarEstudiante(id) {
     if (confirm("¿Estás seguro?")) {
-        await fetch(`${API_URL}/api/estudiantes/${id}?admin_correo=${encodeURIComponent(usuarioLogueado)}`, { method: 'DELETE' });
-        cargarEstudiantes();
+        try {
+            const res = await fetch(`${API_URL}/api/estudiantes/${id}?admin_correo=${encodeURIComponent(usuarioLogueado)}`, { method: 'DELETE' });
+
+            if (res.ok) {
+                await cargarEstudiantes();
+            }
+
+        } catch (error) {
+            console.error("Error al eliminar:", error);
+        }
     }
 }
 
@@ -189,3 +206,44 @@ function prepararEdicion(id, nombre, apellido, carrera, email) {
 
     abrirModal();
 }
+
+async function actualizarContador() {
+    if (!usuarioLogueado) return;
+
+    try {
+        const response = await fetch(`${API_URL}/api/estudiantes/conteo?admin_correo=${encodeURIComponent(usuarioLogueado)}`);
+        const data = await response.json();
+
+        const contadorElemento = document.getElementById("total-registrados");
+
+        if (contadorElemento) {
+            contadorElemento.innerText = data.total;
+        }
+
+    } catch (error) {
+        console.error("Error al obtener el conteo:", error);
+    }
+}
+
+function filtrarTabla() {
+    const texto = document.getElementById("buscador").value.toLowerCase();
+    const filas = document.querySelectorAll("#tabla-estudiantes tr");
+
+    filas.forEach(fila => {
+        const contenido = fila.textContent.toLowerCase();
+        fila.style.display = contenido.includes(texto) ? "" : "none";
+    });
+}
+
+window.onload = function () {
+    const usuarioGuardado = localStorage.getItem("usuario");
+
+    if (usuarioGuardado) {
+        usuarioLogueado = usuarioGuardado;
+
+        document.getElementById('login-container').classList.add('hidden');
+        document.getElementById('step-crud').classList.remove('hidden');
+
+        cargarEstudiantes();
+    }
+};
