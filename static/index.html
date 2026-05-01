@@ -6,19 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Estudiantes - OTP System</title>
 
-    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-    <!-- TU CSS PERSONAL -->
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 
 <body class="bg-[#0f172a] text-slate-200 min-h-screen flex items-center justify-center p-4">
 
-    <!-- LOGIN -->
     <div id="login-container"
         class="fade-in card-hover bg-[#1e293b] p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
 
@@ -27,7 +23,6 @@
             <p class="text-slate-400">Ingresa a tu panel administrativo</p>
         </div>
 
-        <!-- EMAIL -->
         <div id="step-email" class="space-y-4">
             <div>
                 <label class="block text-sm font-medium mb-1">Correo Electrónico</label>
@@ -41,7 +36,6 @@
             </button>
         </div>
 
-        <!-- OTP -->
         <div id="step-otp" class="hidden space-y-4">
             <div>
                 <label class="block text-sm font-medium mb-1">Código de Verificación</label>
@@ -58,21 +52,17 @@
         <div id="mensaje" class="mt-4 text-center text-sm"></div>
     </div>
 
-    <!-- CRUD -->
     <div id="step-crud" class="hidden w-full max-w-5xl fade-in">
 
         <div class="card-hover bg-[#1e293b] rounded-2xl shadow-2xl border border-slate-700 overflow-hidden">
 
-            <!-- HEADER -->
             <div class="p-8 border-b border-slate-700 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div>
                     <h2 class="text-2xl font-bold text-white">Gestión de Estudiantes</h2>
                     <p class="text-slate-400 text-sm">Panel administrativo</p>
                 </div>
 
-                <!-- CONTENEDOR DE ACCIONES -->
                 <div class="flex flex-wrap items-center gap-4">
-                    <!-- BUSCADOR -->
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                             <i class="fas fa-search text-slate-500"></i>
@@ -81,7 +71,6 @@
                             class="bg-[#0f172a] border border-slate-600 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all w-64">
                     </div>
 
-                    <!-- BOTONES -->
                     <button onclick="abrirModal()"
                         class="bg-teal-600 hover:bg-teal-500 px-5 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-lg text-white text-sm">
                         <i class="fas fa-plus"></i> NUEVO ESTUDIANTE
@@ -94,19 +83,16 @@
                 </div>
             </div>
 
-            <!-- ESTADÍSTICAS RÁPIDAS -->
             <div class="px-8 py-4 bg-slate-800/30 border-b border-slate-700 flex items-center gap-4">
                 <div class="bg-teal-500/10 p-3 rounded-lg">
                     <i class="fas fa-users text-teal-400 text-xl"></i>
                 </div>
                 <div>
                     <p class="text-slate-400 text-xs uppercase tracking-widest font-semibold">Total Registrados</p>
-                    <!-- ID CORREGIDO PARA EL JS -->
                     <p id="total-registrados" class="text-2xl font-bold text-white leading-none">0</p>
                 </div>
             </div>
 
-            <!-- TABLA -->
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead class="bg-slate-800/50 text-teal-400 text-xs uppercase tracking-wider">
@@ -123,7 +109,6 @@
         </div>
     </div>
 
-    <!-- MODAL -->
     <div id="modal-estudiante"
         class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
 
@@ -162,7 +147,6 @@
         </div>
     </div>
 
-    <!-- JS -->
     <script src="/static/script.js"></script>
 
 </body>
