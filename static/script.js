@@ -1,4 +1,8 @@
 const VERSION = "1.2.0";
+
+// 🔥 URL DEL BACKEND EN RENDER
+const API_URL = "https://servicio-otp-21.onrender.com";
+
 let usuarioLogueado = "";
 let editandoId = null;
 
@@ -17,7 +21,7 @@ async function registrarNuevoUsuario() {
     const params = new URLSearchParams({ correo: email });
 
     try {
-        const res = await fetch(`/usuarios/registrar?${params}`, {
+        const res = await fetch(`${API_URL}/usuarios/registrar?${params}`, {
             method: 'POST'
         });
 
@@ -58,7 +62,7 @@ async function enviarCorreo() {
     const params = new URLSearchParams({ correo: email });
 
     try {
-        const res = await fetch(`/usuarios/login?${params}`, {
+        const res = await fetch(`${API_URL}/usuarios/login?${params}`, {
             method: 'POST'
         });
 
@@ -109,9 +113,10 @@ async function verificarCodigo() {
     if (otp.length < 4) return alert("Ingresa el código completo.");
 
     try {
-        const res = await fetch(`/usuarios/verificar?correo=${encodeURIComponent(usuarioLogueado)}&otp=${encodeURIComponent(otp)}`, {
-            method: 'POST'
-        });
+        const res = await fetch(
+            `${API_URL}/usuarios/verificar?correo=${encodeURIComponent(usuarioLogueado)}&otp=${encodeURIComponent(otp)}`,
+            { method: 'POST' }
+        );
 
         if (res.ok) {
             document.getElementById('auth-container').classList.add('hidden');
@@ -134,7 +139,7 @@ async function verificarCodigo() {
 // =========================
 async function cargarEstudiantes() {
     try {
-        const res = await fetch(`/api/estudiantes`);
+        const res = await fetch(`${API_URL}/api/estudiantes`);
         const estudiantes = await res.json();
 
         const tabla = document.getElementById('tabla-estudiantes');
@@ -180,8 +185,8 @@ async function guardarEstudiante() {
     }
 
     const url = editandoId
-        ? `/api/estudiantes/${editandoId}`
-        : `/api/estudiantes`;
+        ? `${API_URL}/api/estudiantes/${editandoId}`
+        : `${API_URL}/api/estudiantes`;
 
     const method = editandoId ? "PUT" : "POST";
 
@@ -208,7 +213,7 @@ async function eliminarEstudiante(id) {
     if (!confirm("¿Eliminar estudiante?")) return;
 
     try {
-        const res = await fetch(`/api/estudiantes/${id}`, {
+        const res = await fetch(`${API_URL}/api/estudiantes/${id}`, {
             method: 'DELETE'
         });
 
