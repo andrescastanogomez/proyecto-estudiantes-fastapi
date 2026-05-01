@@ -2,8 +2,6 @@ const API_URL = window.location.origin;
 let usuarioLogueado = "";
 let editandoId = null;
 
-// ================= AUTENTICACIÓN =================
-
 async function enviarCorreo() {
     const email = document.getElementById('email').value;
     const btn = document.getElementById('btn-envio');
@@ -18,7 +16,6 @@ async function enviarCorreo() {
     try {
         let res = await fetch(`${API_URL}/usuarios/login?correo=${encodeURIComponent(email)}`, { method: 'POST' });
 
-        // Si no existe, lo crea automáticamente
         if (res.status === 404) {
             mostrarMensaje("Creando cuenta nueva...", "success");
 
@@ -73,8 +70,6 @@ async function verificarCodigo() {
     }
 }
 
-// ================= SESIÓN =================
-
 function cerrarSesion() {
     document.getElementById('step-crud').classList.add('hidden');
     document.getElementById('login-container').classList.remove('hidden');
@@ -89,8 +84,6 @@ function cerrarSesion() {
     document.getElementById('mensaje').innerText = "";
 }
 
-// ================= MENSAJES =================
-
 function mostrarMensaje(texto, tipo) {
     const m = document.getElementById('mensaje');
 
@@ -103,8 +96,6 @@ function mostrarMensaje(texto, tipo) {
         m.classList.add("error");
     }
 }
-
-// ================= CRUD =================
 
 async function cargarEstudiantes() {
     const tabla = document.getElementById('tabla-estudiantes');
@@ -172,8 +163,6 @@ async function eliminarEstudiante(id) {
         cargarEstudiantes();
     }
 }
-
-// ================= UI =================
 
 function abrirModal() {
     document.getElementById('modal-estudiante').classList.remove('hidden');
