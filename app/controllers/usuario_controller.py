@@ -1,119 +1,68 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.usuario import Usuario
-
-from datetime import datetime, timedelta
-import random
-import smtplib
-from email.mime.text import MIMEText
-import os
+from app.services import servicios
+import threading
 
 router = APIRouter()
 
-# 🔥 OTP en memoria
-OTP_TEMP = {}
-
 # =========================
-# CONFIG CORREO (USA VARIABLES DE ENTORNO EN RENDER)
-# =========================
-EMAIL_USER = "nacionalspod@gmail.com"
-EMAIL_PASS = "bjjsjxavestjlqfc"
-
-def enviar_otp_email(destino, codigo):
-    if not EMAIL_USER or not EMAIL_PASS:
-        print("⚠️ EMAIL_USER o EMAIL_PASS no configurados")
-        print(f"OTP (fallback consola): {codigo}")
-        return
-
-    mensaje = MIMEText(f"Tu código OTP es: {codigo}")
-    mensaje["Subject"] = "Código OTP"
-    mensaje["From"] = EMAIL_USER
-    mensaje["To"] = destino
-
-    try:
-        servidor = smtplib.SMTP("smtp.gmail.com", 587)
-        servidor.starttls()
-        servidor.login(EMAIL_USER, EMAIL_PASS)
-        servidor.send_message(mensaje)
-        servidor.quit()
-
-        print("📩 Correo enviado correctamente")
-
-    except Exception as e:
-        print("❌ Error enviando correo:", e)
-        print(f"OTP (fallback consola): {codigo}")
-
-
-# =========================
-# REGISTRO
+# REGISTRAR USUARIO
 # =========================
 @router.post("/registrar")
 def registrar(correo: str, db: Session = Depends(get_db)):
-    correo = correo.lower().strip()
+    correo_limpio = correo.lower().strip()
 
-    usuario = db.query(Usuario).filter(Usuario.correo == correo).first()
-    if usuario:
-        return {"status": "success", "mensaje": "Usuario ya existe"}
+    try:
+        servicios.crear_usuario(db, correo_limpio)
 
-    nuevo = Usuario(correo=correo)
-    db.add(nuevo)
-    db.commit()
+        # Intento enviar correo de bienvenida (no bloquea)
+        try:
+            servicios.enviar_correo_bienvenida(correo_limpio)
+        except Exception as e:
+            print("Error correo bienvenida:", e)
 
-    return {"status": "success", "mensaje": "Usuario registrado"}
+        return {"status": "success", "mensaje": "Usuario listo para ingresar"}
+
+    except Exception:
+        return {"status": "success", "mensaje": "El usuario ya estaba registrado"}
 
 
 # =========================
-# LOGIN (OTP)
+# LOGIN - GENERAR OTP
 # =========================
 @router.post("/login")
 def login(correo: str, db: Session = Depends(get_db)):
-    correo = correo.lower().strip()
+    correo_limpio = correo.lower().strip()
 
-    usuario = db.query(Usuario).filter(Usuario.correo == correo).first()
-    if not usuario:
-        raise HTTPException(status_code=404, detail="Correo no registrado")
+    codigo = servicios.generar_otp_simulado(db, correo_limpio)
 
-    # Evitar múltiples OTP
-    if correo in OTP_TEMP:
-        otp_data = OTP_TEMP[correo]
-        if datetime.now() < otp_data["expira"]:
-            print(f"OTP existente: {otp_data['codigo']}")
-            return {"status": "success", "mensaje": "Ya tienes un OTP activo"}
-
-    # Generar OTP
-    codigo = str(random.randint(100000, 999999))
-
-    OTP_TEMP[correo] = {
-        "codigo": codigo,
-        "expira": datetime.now() + timedelta(minutes=5)
-    }
+    if not codigo:
+        raise HTTPException(status_code=404, detail="Correo no encontrado")
 
     print(f"--- OTP GENERADO: {codigo} ---")
 
-    enviar_otp_email(correo, codigo)
+    # 🔥 ENVÍO ASYNC (NO BLOQUEA)
+    def enviar_async():
+        try:
+            servicios.enviar_correo_otp(correo_limpio, codigo)
+            print("📩 Correo enviado correctamente")
+        except Exception as e:
+            print("❌ Error enviando correo:", e)
 
-    return {"status": "success", "mensaje": "Código enviado"}
+    threading.Thread(target=enviar_async).start()
+
+    return {"status": "success", "mensaje": "Código enviado correctamente"}
 
 
 # =========================
-# VERIFICAR
+# VERIFICAR OTP
 # =========================
 @router.post("/verificar")
-def verificar(correo: str, otp: str):
-    correo = correo.lower().strip()
+def verificar(correo: str, otp: str, db: Session = Depends(get_db)):
+    correo_limpio = correo.lower().strip()
 
-    otp_data = OTP_TEMP.get(correo)
-
-    if not otp_data:
-        raise HTTPException(status_code=401, detail="No hay OTP activo")
-
-    if datetime.now() > otp_data["expira"]:
-        del OTP_TEMP[correo]
-        raise HTTPException(status_code=401, detail="OTP expirado")
-
-    if otp_data["codigo"] == otp:
-        del OTP_TEMP[correo]
+    if servicios.verificar_otp_db(db, correo_limpio, otp):
         return {"status": "success", "mensaje": "Acceso concedido"}
 
     raise HTTPException(status_code=401, detail="Código incorrecto")
