@@ -4,90 +4,155 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestión OTP</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- RUTA CORREGIDA -->
     <link rel="stylesheet" href="/static/styles.css">
 </head>
+
 <body class="bg-[#0f172a] text-slate-200 min-h-screen flex items-center justify-center p-4">
 
-    <!-- CONTENEDOR DE ACCESO -->
+    <!-- LOGIN + REGISTRO -->
     <div id="auth-container" class="fade-in w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8">
+
         <!-- LOGIN -->
         <div class="bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700 card-hover">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-white mb-2">Ingresar</h1>
                 <p class="text-slate-400">Accede con tu código de seguridad</p>
             </div>
+
+            <!-- EMAIL -->
             <div id="step-email" class="space-y-4">
-                <input type="email" id="email" placeholder="ejemplo@correo.com" class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
-                <button onclick="enviarCorreo()" id="btn-envio" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-lg transition-all shadow-lg">Solicitar OTP</button>
+                <input type="email" id="email" placeholder="ejemplo@correo.com"
+                    class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+
+                <button onclick="enviarCorreo()" id="btn-envio"
+                    class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-lg">
+                    Solicitar OTP
+                </button>
             </div>
+
+            <!-- OTP -->
             <div id="step-otp" class="hidden space-y-4">
-                <input type="text" id="otp" placeholder="000000" maxlength="6" class="w-full bg-[#0f172a] border border-teal-500/50 rounded-lg px-4 py-3 text-center text-2xl tracking-widest text-white">
-                <button onclick="verificarCodigo()" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-lg transition-all">Verificar e Ingresar</button>
+                <input type="text" id="otp" placeholder="000000" maxlength="6"
+                    class="w-full bg-[#0f172a] border border-teal-500/50 rounded-lg px-4 py-3 text-center text-2xl tracking-widest text-white">
+
+                <button onclick="verificarCodigo()"
+                    class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-lg">
+                    Verificar e Ingresar
+                </button>
+
+                <!-- 🔥 NUEVO BOTÓN -->
+                <button onclick="reenviarOTP()"
+                    class="w-full bg-slate-600 hover:bg-slate-500 text-white py-2 rounded-lg">
+                    Reenviar código
+                </button>
             </div>
+
             <div id="mensaje" class="mt-4 text-center text-sm"></div>
         </div>
 
         <!-- REGISTRO -->
-        <div class="bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700 card-hover border-t-4 md:border-t-0 md:border-l-4 border-teal-600">
+        <div class="bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700 border-t-4 md:border-t-0 md:border-l-4 border-teal-600">
             <div class="text-center mb-8">
                 <h2 class="text-3xl font-bold text-white mb-2">Nuevo Usuario</h2>
                 <p class="text-slate-400">Crea una cuenta administrativa</p>
             </div>
+
             <div class="space-y-4">
-                <input type="email" id="reg-email" placeholder="usuario@empresa.com" class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-4 py-3 text-white">
-                <button onclick="registrarNuevoUsuario()" id="btn-registro" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg border border-slate-500">Registrarme</button>
+                <input type="email" id="reg-email" placeholder="usuario@empresa.com"
+                    class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-4 py-3 text-white">
+
+                <button onclick="registrarNuevoUsuario()"
+                    class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg border border-slate-500">
+                    Registrarme
+                </button>
             </div>
+
             <div id="mensaje-registro" class="mt-4 text-center text-sm"></div>
         </div>
+
     </div>
 
     <!-- PANEL CRUD -->
     <div id="step-crud" class="hidden w-full max-w-6xl fade-in">
         <div class="bg-[#1e293b] rounded-2xl shadow-2xl border border-slate-700 overflow-hidden">
-            <div class="p-6 border-b border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+            <div class="p-6 border-b border-slate-700 flex justify-between">
                 <div>
                     <h2 class="text-2xl font-bold text-white">Panel de Estudiantes</h2>
-                    <p class="text-slate-400 text-sm">Sesión: <span id="user-display" class="text-teal-400 font-mono"></span></p>
+                    <p class="text-slate-400 text-sm">
+                        Sesión: <span id="user-display" class="text-teal-400"></span>
+                    </p>
                 </div>
+
                 <div class="flex gap-3">
-                    <button onclick="abrirModal()" class="bg-teal-600 hover:bg-teal-500 px-4 py-2 rounded-lg font-bold flex items-center gap-2"><i class="fas fa-plus"></i> AGREGAR</button>
-                    <button onclick="cerrarSesion()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg">Salir</button>
+                    <button onclick="abrirModal()"
+                        class="bg-teal-600 px-4 py-2 rounded-lg font-bold">
+                        + AGREGAR
+                    </button>
+
+                    <button onclick="cerrarSesion()"
+                        class="bg-slate-700 px-4 py-2 rounded-lg">
+                        Salir
+                    </button>
                 </div>
             </div>
+
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead class="bg-slate-800 text-teal-400 text-xs uppercase">
-                        <tr><th class="px-6 py-4">Estudiante</th><th class="px-6 py-4">Carrera</th><th class="px-6 py-4 text-center">Acciones</th></tr>
+                        <tr>
+                            <th class="px-6 py-4">Estudiante</th>
+                            <th class="px-6 py-4">Carrera</th>
+                            <th class="px-6 py-4 text-center">Acciones</th>
+                        </tr>
                     </thead>
-                    <tbody id="tabla-estudiantes" class="divide-y divide-slate-700"></tbody>
+                    <tbody id="tabla-estudiantes"></tbody>
                 </table>
             </div>
+
         </div>
     </div>
 
     <!-- MODAL -->
-    <div id="modal-estudiante" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-[#1e293b] w-full max-w-md rounded-2xl border border-slate-700 p-6 fade-in">
-            <h3 id="modal-titulo" class="text-xl font-bold text-white mb-4">Nuevo Estudiante</h3>
+    <div id="modal-estudiante"
+        class="fixed inset-0 bg-black/80 hidden flex items-center justify-center">
+
+        <div class="bg-[#1e293b] w-full max-w-md rounded-2xl p-6">
+            <h3 class="text-xl font-bold text-white mb-4">Estudiante</h3>
+
             <form onsubmit="event.preventDefault(); guardarEstudiante();" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="form-nombre" placeholder="Nombre" required class="bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 text-white">
-                    <input type="text" id="form-apellido" placeholder="Apellido" required class="bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 text-white">
-                </div>
-                <input type="text" id="form-carrera" placeholder="Carrera" required class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 text-white">
-                <input type="email" id="form-email" placeholder="Correo" required class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-3 py-2 text-white">
+
+                <input type="text" id="form-nombre" placeholder="Nombre" required
+                    class="w-full bg-[#0f172a] border border-slate-600 rounded px-3 py-2">
+
+                <input type="text" id="form-apellido" placeholder="Apellido" required
+                    class="w-full bg-[#0f172a] border border-slate-600 rounded px-3 py-2">
+
+                <input type="text" id="form-carrera" placeholder="Carrera" required
+                    class="w-full bg-[#0f172a] border border-slate-600 rounded px-3 py-2">
+
+                <input type="email" id="form-email" placeholder="Correo" required
+                    class="w-full bg-[#0f172a] border border-slate-600 rounded px-3 py-2">
+
                 <div class="flex gap-2">
-                    <button type="submit" class="w-full bg-teal-600 py-3 rounded-lg font-bold">Guardar</button>
-                    <button type="button" onclick="cerrarModal()" class="w-full bg-slate-700 py-3 rounded-lg">Cancelar</button>
+                    <button type="submit"
+                        class="w-full bg-teal-600 py-2 rounded">
+                        Guardar
+                    </button>
+
+                    <button type="button" onclick="cerrarModal()"
+                        class="w-full bg-slate-700 py-2 rounded">
+                        Cancelar
+                    </button>
                 </div>
+
             </form>
         </div>
     </div>
 
-    <!-- RUTA CORREGIDA -->
     <script src="/static/script.js"></script>
 </body>
 </html>
