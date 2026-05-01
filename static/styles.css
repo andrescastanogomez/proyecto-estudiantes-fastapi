@@ -1,81 +1,40 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
 }
 
+/* Animación suave de entrada */
 .fade-in {
-    animation: fadeIn 0.5s ease;
+    animation: fadeIn 0.5s ease-out;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-input {
-    transition: all 0.2s ease;
-}
-
-input:focus {
-    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.5);
-    transform: scale(1.01);
-}
-
-button {
-    transition: all 0.2s ease;
-}
-
-button:hover {
-    transform: translateY(-1px);
-}
-
-button:active {
-    transform: scale(0.97);
-}
-
-table tr {
-    transition: all 0.2s ease;
-}
-
-table tr:hover {
-    background-color: rgba(30, 41, 59, 0.6);
-}
-
-#modal-estudiante {
-    animation: fadeIn 0.3s ease;
-}
-
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #14b8a6;
-    border-radius: 10px;
-}
-
-.success {
-    color: #14b8a6;
-    font-weight: 600;
-}
-
-.error {
-    color: #ef4444;
-    font-weight: 600;
-}
-
+/* Efectos de las tarjetas */
 .card-hover {
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .card-hover:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    transform: scale(1.02);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Scrollbar personalizado para la tabla */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #14b8a6;
 }

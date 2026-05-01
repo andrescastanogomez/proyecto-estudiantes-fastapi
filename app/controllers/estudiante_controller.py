@@ -2,58 +2,56 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.estudiante import Estudiante
-from app.models.usuario import Usuario
+from pydantic import BaseModel
 
-router = APIRouter(tags=["Estudiantes"])
+router = APIRouter()
+
+# Esquema para validar los datos que vienen del Frontend
+class EstudianteSchema(BaseModel):
+    nombre: str
+    apellido: str
+    carrera: str
+    email: str
+
+    class Config:
+        from_attributes = True
 
 @router.get("/estudiantes")
-def obtener_mis_estudiantes(correo: str, db: Session = Depends(get_db)):
-    admin = db.query(Usuario).filter(Usuario.correo == correo).first()
-    if not admin:
-        return []
-    return db.query(Estudiante).filter(Estudiante.owner_id == admin.id).all()
+def listar_estudiantes(db: Session = Depends(get_db)):
+    # Importante: No debe pedir parámetros obligatorios aquí para evitar el 422
+    return db.query(Estudiante).all()
 
 @router.post("/estudiantes")
-def crear_estudiante(nombre: str, apellido: str, carrera: str, email: str, admin_correo: str, db: Session = Depends(get_db)):
-    admin = db.query(Usuario).filter(Usuario.correo == admin_correo).first()
-    if not admin:
-        raise HTTPException(status_code=404, detail="Admin no encontrado")
-    
-    nuevo = Estudiante(nombre=nombre, apellido=apellido, carrera=carrera, email=email, owner_id=admin.id)
-    db.add(nuevo)
+def crear_estudiante(estudiante_data: EstudianteSchema, db: Session = Depends(get_db)):
+    nuevo_estudiante = Estudiante(
+        nombre=estudiante_data.nombre,
+        apellido=estudiante_data.apellido,
+        carrera=estudiante_data.carrera,
+        email=estudiante_data.email
+    )
+    db.add(nuevo_estudiante)
     db.commit()
-    db.refresh(nuevo)
-    return nuevo
+    db.refresh(nuevo_estudiante)
+    return nuevo_estudiante
 
-@router.put("/estudiantes/{id}")
-def actualizar_estudiante(id: int, nombre: str, apellido: str, carrera: str, email: str, admin_correo: str, db: Session = Depends(get_db)):
-    admin = db.query(Usuario).filter(Usuario.correo == admin_correo).first()
-    est = db.query(Estudiante).filter(Estudiante.id == id, Estudiante.owner_id == admin.id).first()
+@router.put("/estudiantes/{estudiante_id}")
+def actualizar_estudiante(estudiante_id: int, estudiante_data: EstudianteSchema, db: Session = Depends(get_db)):
+    db_est = db.query(Estudiante).filter(Estudiante.id == estudiante_id).first()
+    if not db_est:
+        raise HTTPException(status_code=404, detail="Estudiante no encontrado")
     
-    if not est:
-        raise HTTPException(status_code=404, detail="No encontrado")
+    for key, value in estudiante_data.dict().items():
+        setattr(db_est, key, value)
     
-    est.nombre, est.apellido, est.carrera, est.email = nombre, apellido, carrera, email
     db.commit()
-    return {"status": "actualizado"}
+    db.refresh(db_est)
+    return db_est
 
-@router.delete("/estudiantes/{id}")
-def eliminar_estudiante(id: int, admin_correo: str, db: Session = Depends(get_db)):
-    admin = db.query(Usuario).filter(Usuario.correo == admin_correo).first()
-    est = db.query(Estudiante).filter(Estudiante.id == id, Estudiante.owner_id == admin.id).first()
-    
-    if not est:
+@router.delete("/estudiantes/{estudiante_id}")
+def eliminar_estudiante(estudiante_id: int, db: Session = Depends(get_db)):
+    db_est = db.query(Estudiante).filter(Estudiante.id == estudiante_id).first()
+    if not db_est:
         raise HTTPException(status_code=404, detail="No encontrado")
-    
-    db.delete(est)
+    db.delete(db_est)
     db.commit()
-    return {"status": "eliminado"}
-@router.get("/estudiantes/conteo")
-def obtener_conteo(admin_correo: str, db: Session = Depends(get_db)):
-    # Contamos cuántos estudiantes pertenecen a este admin
-    admin = db.query(Usuario).filter(Usuario.correo == admin_correo.lower().strip()).first()
-    if not admin:
-        return {"total": 0}
-    
-    total = db.query(Estudiante).filter(Estudiante.owner_id == admin.id).count()
-    return {"total": total}
+    return {"message": "Eliminado"}

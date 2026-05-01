@@ -2,16 +2,18 @@ import mimetypes
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from app.controllers import estudiante_controller, usuario_controller
 from app.database import engine, Base
 
-# Fix para que Windows reconozca archivos .js correctamente
+# Solución para Windows: Forzar MIME types
 mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 
-# Crear tablas en la base de datos
+# Crear tablas
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="CRUD Estudiantes con OTP")
+app = FastAPI(title="Proyecto Estudiantes OTP")
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,13 +23,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Rutas
+# 1. API Routers
 app.include_router(usuario_controller.router, prefix="/usuarios", tags=["Usuarios"])
 app.include_router(estudiante_controller.router, prefix="/api", tags=["Estudiantes"])
 
-# Servir archivos estáticos
+# 2. Montar archivos estáticos
+# IMPORTANTE: La carpeta 'static' debe existir en la raíz del proyecto
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/", StaticFiles(directory="static", html=True), name="static_root")
+
+# 3. Servir el Index
+@app.get("/")
+async def read_index():
+    return FileResponse("static/index.html")
 
 if __name__ == "__main__":
     import uvicorn

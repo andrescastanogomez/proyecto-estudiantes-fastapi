@@ -1,268 +1,123 @@
-const API_URL = window.location.origin;
+const API_URL = ""; // Al estar en el mismo servidor, podemos usar rutas relativas
 let usuarioLogueado = "";
 let editandoId = null;
 
-async function enviarCorreo() {
-    const email = document.getElementById('email').value;
-    const btn = document.getElementById('btn-envio');
-
+// --- GESTIÓN DE USUARIOS ---
+async function registrarNuevoUsuario() {
+    const email = document.getElementById('reg-email').value.trim();
     if (!email) return alert("Ingresa un correo");
 
-    btn.innerText = "Enviando...";
-    btn.disabled = true;
+    try {
+        const res = await fetch(`/usuarios/registrar?correo=${encodeURIComponent(email)}`, { method: 'POST' });
+        if (res.ok) {
+            document.getElementById('mensaje-registro').innerHTML = "<span class='text-teal-400'>¡Registrado! Ya puedes ingresar.</span>";
+            document.getElementById('email').value = email;
+        } else {
+            alert("El correo ya existe o es inválido.");
+        }
+    } catch (err) { console.error(err); }
+}
 
-    mostrarMensaje("Procesando solicitud...", "success");
+async function enviarCorreo() {
+    const email = document.getElementById('email').value.trim();
+    if (!email) return alert("Ingresa tu correo");
 
     try {
-        let res = await fetch(`${API_URL}/usuarios/login?correo=${encodeURIComponent(email)}`, { method: 'POST' });
-
-        if (res.status === 404) {
-            mostrarMensaje("Creando cuenta nueva...", "success");
-            await fetch(`${API_URL}/usuarios/registrar?correo=${encodeURIComponent(email)}`, { method: 'POST' });
-            res = await fetch(`${API_URL}/usuarios/login?correo=${encodeURIComponent(email)}`, { method: 'POST' });
-        }
-
+        const res = await fetch(`/usuarios/login?correo=${encodeURIComponent(email)}`, { method: 'POST' });
         if (res.ok) {
+            usuarioLogueado = email;
             document.getElementById('step-email').classList.add('hidden');
             document.getElementById('step-otp').classList.remove('hidden');
-
-            mostrarMensaje("Código enviado con éxito 📩", "success");
-            btn.innerText = "Código enviado ✔";
-        } else {
-            mostrarMensaje("Error al obtener el código", "error");
-            btn.disabled = false;
-            btn.innerText = "Solicitar OTP";
-        }
-
-    } catch (err) {
-        mostrarMensaje("Error de conexión", "error");
-        btn.disabled = false;
-        btn.innerText = "Solicitar OTP";
-    }
+            mostrarMensaje("Código enviado 📩", "success");
+        } else { mostrarMensaje("Correo no registrado", "error"); }
+    } catch (err) { console.error(err); }
 }
 
 async function verificarCodigo() {
-    const email = document.getElementById('email').value;
-    const otp = document.getElementById('otp').value;
-
+    const otp = document.getElementById('otp').value.trim();
     try {
-        const res = await fetch(`${API_URL}/usuarios/verificar?correo=${encodeURIComponent(email)}&otp=${otp}`, { method: 'POST' });
-
+        const res = await fetch(`/usuarios/verificar?correo=${encodeURIComponent(usuarioLogueado)}&otp=${otp}`, { method: 'POST' });
         if (res.ok) {
-            usuarioLogueado = email;
-            localStorage.setItem("usuario", email);
-
-            document.getElementById('login-container').classList.add('hidden');
-
-            const crud = document.getElementById('step-crud');
-            crud.classList.remove('hidden');
-            crud.classList.add('fade-in');
-
+            document.getElementById('auth-container').classList.add('hidden');
+            document.getElementById('step-crud').classList.remove('hidden');
+            document.getElementById('user-display').innerText = usuarioLogueado;
             cargarEstudiantes();
-        } else {
-            mostrarMensaje("Código incorrecto", "error");
-        }
-
-    } catch (err) {
-        mostrarMensaje("Error al verificar", "error");
-    }
+        } else { alert("Código incorrecto"); }
+    } catch (err) { console.error(err); }
 }
 
-function cerrarSesion() {
-    localStorage.removeItem("usuario");
-
-    document.getElementById('step-crud').classList.add('hidden');
-    document.getElementById('login-container').classList.remove('hidden');
-    document.getElementById('step-email').classList.remove('hidden');
-    document.getElementById('step-otp').classList.add('hidden');
-
-    document.getElementById('btn-envio').innerText = "Solicitar OTP";
-    document.getElementById('btn-envio').disabled = false;
-
-    document.getElementById('email').value = "";
-    document.getElementById('otp').value = "";
-    document.getElementById('mensaje').innerText = "";
-
-    usuarioLogueado = "";
-}
-
-function mostrarMensaje(texto, tipo) {
-    const m = document.getElementById('mensaje');
-
-    m.innerText = texto;
-    m.className = "mt-4 text-center text-sm font-medium";
-
-    if (tipo === "success") {
-        m.classList.add("success");
-    } else {
-        m.classList.add("error");
-    }
-}
-
+// --- CRUD ---
 async function cargarEstudiantes() {
-    const tabla = document.getElementById('tabla-estudiantes');
-
     try {
-        const res = await fetch(`${API_URL}/api/estudiantes?correo=${encodeURIComponent(usuarioLogueado)}`);
-        const data = await res.json();
-
+        const res = await fetch(`/api/estudiantes`);
+        const estudiantes = await res.json();
+        const tabla = document.getElementById('tabla-estudiantes');
         tabla.innerHTML = "";
-
-        data.forEach(est => {
+        estudiantes.forEach(est => {
             tabla.innerHTML += `
-                <tr class="hover:bg-slate-800/40 transition-colors">
-                    <td class="px-6 py-4">${est.nombre}</td>
-                    <td class="px-6 py-4">${est.apellido}</td>
-                    <td class="px-6 py-4 font-semibold text-[#14b8a6]">${est.carrera}</td>
-                    <td class="px-6 py-4">
-                        <div class="flex justify-center gap-4">
-                            <button onclick='prepararEdicion(${est.id}, ${JSON.stringify(est.nombre)}, ${JSON.stringify(est.apellido)}, ${JSON.stringify(est.carrera)}, ${JSON.stringify(est.email)})'
-                                class="flex items-center gap-2 text-blue-400 hover:text-blue-300 font-bold text-xs">
-                                ✏️ Editar
-                            </button>
-                            <button onclick="eliminarEstudiante(${est.id})"
-                                class="flex items-center gap-2 text-red-400 hover:text-red-300 font-bold text-xs">
-                                🗑️ Eliminar
-                            </button>
-                        </div>
+                <tr class="hover:bg-slate-800/50">
+                    <td class="px-6 py-4 text-white">${est.nombre} ${est.apellido}</td>
+                    <td class="px-6 py-4 text-slate-400">${est.carrera}</td>
+                    <td class="px-6 py-4 text-center">
+                        <button onclick='prepararEdicion(${JSON.stringify(est)})' class="text-teal-500 mr-2"><i class="fas fa-edit"></i></button>
+                        <button onclick="eliminarEstudiante(${est.id})" class="text-red-500"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
         });
-
-        actualizarContador();
-
-    } catch (e) {
-        console.error(e);
-        mostrarMensaje("Error al cargar estudiantes", "error");
-    }
+    } catch (e) { console.error(e); }
 }
 
 async function guardarEstudiante() {
-    const n = document.getElementById('form-nombre').value;
-    const a = document.getElementById('form-apellido').value;
-    const c = document.getElementById('form-carrera').value;
-    const e = document.getElementById('form-email').value;
+    const data = {
+        nombre: document.getElementById('form-nombre').value,
+        apellido: document.getElementById('form-apellido').value,
+        carrera: document.getElementById('form-carrera').value,
+        email: document.getElementById('form-email').value
+    };
 
-    const nombre = n.trim();
-    const apellido = a.trim();
-    const carrera = c.trim();
-    const email = e.trim();
+    const url = editandoId ? `/api/estudiantes/${editandoId}` : `/api/estudiantes`;
+    const method = editandoId ? 'PUT' : 'POST';
 
-    if (!nombre || !apellido || !carrera || !email) {
-        return mostrarMensaje("Todos los campos son obligatorios", "error");
-    }
+    const res = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
 
-    if (nombre.length < 2 || apellido.length < 2) {
-        return mostrarMensaje("Nombre y apellido deben tener al menos 2 caracteres", "error");
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return mostrarMensaje("Email inválido", "error");
-    }
-
-    const params = `nombre=${nombre}&apellido=${apellido}&carrera=${carrera}&email=${email}&admin_correo=${encodeURIComponent(usuarioLogueado)}`;
-
-    const url = editandoId
-        ? `${API_URL}/api/estudiantes/${editandoId}?${params}`
-        : `${API_URL}/api/estudiantes?${params}`;
-
-    const metodo = editandoId ? 'PUT' : 'POST';
-
-    try {
-        const res = await fetch(url, { method: metodo });
-
-        if (res.ok) {
-            cerrarModal();
-            await cargarEstudiantes();
-            mostrarMensaje("Estudiante guardado correctamente", "success");
-        } else {
-            mostrarMensaje("Error al guardar", "error");
-        }
-
-    } catch (error) {
-        mostrarMensaje("Error de red al guardar", "error");
+    if (res.ok) {
+        cerrarModal();
+        cargarEstudiantes();
+    } else {
+        alert("Error al guardar. Revisa los datos.");
     }
 }
 
 async function eliminarEstudiante(id) {
-    if (confirm("¿Estás seguro?")) {
-        try {
-            const res = await fetch(`${API_URL}/api/estudiantes/${id}?admin_correo=${encodeURIComponent(usuarioLogueado)}`, { method: 'DELETE' });
-
-            if (res.ok) {
-                await cargarEstudiantes();
-            }
-
-        } catch (error) {
-            console.error("Error al eliminar:", error);
-        }
-    }
-}
-
-function abrirModal() {
-    document.getElementById('modal-estudiante').classList.remove('hidden');
-}
-
-function cerrarModal() {
-    document.getElementById('modal-estudiante').classList.add('hidden');
-    editandoId = null;
-
-    document.getElementById('modal-titulo').innerText = "Registrar Estudiante";
-
-    document.querySelectorAll('#modal-estudiante input').forEach(i => i.value = "");
-}
-
-function prepararEdicion(id, nombre, apellido, carrera, email) {
-    editandoId = id;
-
-    document.getElementById('modal-titulo').innerText = "Editar Estudiante";
-
-    document.getElementById('form-nombre').value = nombre;
-    document.getElementById('form-apellido').value = apellido;
-    document.getElementById('form-carrera').value = carrera;
-    document.getElementById('form-email').value = email;
-
-    abrirModal();
-}
-
-async function actualizarContador() {
-    if (!usuarioLogueado) return;
-
-    try {
-        const response = await fetch(`${API_URL}/api/estudiantes/conteo?admin_correo=${encodeURIComponent(usuarioLogueado)}`);
-        const data = await response.json();
-
-        const contadorElemento = document.getElementById("total-registrados");
-
-        if (contadorElemento) {
-            contadorElemento.innerText = data.total;
-        }
-
-    } catch (error) {
-        console.error("Error al obtener el conteo:", error);
-    }
-}
-
-function filtrarTabla() {
-    const texto = document.getElementById("buscador").value.toLowerCase();
-    const filas = document.querySelectorAll("#tabla-estudiantes tr");
-
-    filas.forEach(fila => {
-        const contenido = fila.textContent.toLowerCase();
-        fila.style.display = contenido.includes(texto) ? "" : "none";
-    });
-}
-
-window.onload = function () {
-    const usuarioGuardado = localStorage.getItem("usuario");
-
-    if (usuarioGuardado) {
-        usuarioLogueado = usuarioGuardado;
-
-        document.getElementById('login-container').classList.add('hidden');
-        document.getElementById('step-crud').classList.remove('hidden');
-
+    if (confirm("¿Eliminar?")) {
+        await fetch(`/api/estudiantes/${id}`, { method: 'DELETE' });
         cargarEstudiantes();
     }
-};
+}
+
+// --- UI ---
+function abrirModal() {
+    editandoId = null;
+    document.getElementById('modal-titulo').innerText = "Nuevo Estudiante";
+    document.getElementById('modal-estudiante').classList.remove('hidden');
+}
+function cerrarModal() { document.getElementById('modal-estudiante').classList.add('hidden'); }
+function prepararEdicion(est) {
+    editandoId = est.id;
+    document.getElementById('modal-titulo').innerText = "Editar Estudiante";
+    document.getElementById('form-nombre').value = est.nombre;
+    document.getElementById('form-apellido').value = est.apellido;
+    document.getElementById('form-carrera').value = est.carrera;
+    document.getElementById('form-email').value = est.email;
+    document.getElementById('modal-estudiante').classList.remove('hidden');
+}
+function cerrarSesion() { window.location.reload(); }
+function mostrarMensaje(texto, tipo) {
+    const div = document.getElementById('mensaje');
+    div.innerText = texto;
+    div.className = `mt-4 text-center ${tipo === 'success' ? 'text-teal-400' : 'text-red-400'}`;
+}
