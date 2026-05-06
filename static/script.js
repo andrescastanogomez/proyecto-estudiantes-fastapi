@@ -25,12 +25,18 @@ async function registrarNuevoUsuario() {
     const email = document.getElementById('reg-email').value.trim();
     if (!email) return alert("Por favor, ingresa un correo.");
 
-    const params = new URLSearchParams({ correo: email });
-
     try {
-        const res = await fetch(`${API_URL}/usuarios/registrar?${params}`, {
-            method: 'POST'
+        const res = await fetch(`${API_URL}/usuarios/registrar`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                correo: email
+            })
         });
+
+        const data = await res.json();
 
         if (res.ok) {
             document.getElementById('mensaje-registro').innerHTML =
@@ -38,37 +44,57 @@ async function registrarNuevoUsuario() {
 
             document.getElementById('email').value = email;
         } else {
-            const err = await res.json();
-            alert(err.detail || "Error al registrar");
+            alert(data.detail || "Error al registrar");
         }
 
     } catch (err) {
         console.error("Error registro:", err);
     }
 }
+
 async function solicitarOTP() {
-    const correo = document.getElementById("correoLogin").value;
+    const correo = document.getElementById("email").value.trim();
 
-    const res = await fetch("https://TU-URL-DE-RENDER/usuarios/login", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ correo })
-    });
+    if (!correo) {
+        alert("Ingresa un correo");
+        return;
+    }
 
-    const data = await res.json();
+    try {
+        const res = await fetch(`${API_URL}/usuarios/login`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ correo })
+        });
 
-    const mensaje = document.getElementById("mensajeLogin");
+        const data = await res.json();
 
-    if (res.ok) {
-        mensaje.innerText = data.mensaje;
-        mensaje.style.color = "lightgreen";
-    } else {
-        mensaje.innerText = data.detail;
-        mensaje.style.color = "red";
+        const mensaje = document.getElementById("mensaje"); // ✅ ESTE SÍ EXISTE
+
+        if (res.ok) {
+            usuarioLogueado = correo;
+
+            // 🔥 Mostrar paso OTP
+            document.getElementById("step-email").classList.add("hidden");
+            document.getElementById("step-otp").classList.remove("hidden");
+
+            mensaje.innerText = data.mensaje;
+            mensaje.style.color = "lightgreen";
+
+        } else {
+            mensaje.innerText = data.detail;
+            mensaje.style.color = "red";
+        }
+
+    } catch (error) {
+        console.error("Error OTP:", error);
+        alert("Error conectando con el servidor");
     }
 }
+
+
 // =========================
 // REENVIAR OTP
 // =========================
@@ -85,15 +111,24 @@ function reenviarOTP() {
 // =========================
 // VERIFICAR OTP
 // =========================
+
 async function verificarCodigo() {
     const otp = document.getElementById('otp').value.trim();
     if (otp.length < 4) return alert("Ingresa el código completo.");
 
     try {
-        const res = await fetch(
-            `${API_URL}/usuarios/verificar?correo=${encodeURIComponent(usuarioLogueado)}&otp=${encodeURIComponent(otp)}`,
-            { method: 'POST' }
-        );
+        const res = await fetch(`${API_URL}/usuarios/verificar`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                correo: usuarioLogueado,
+                otp: otp
+            })
+        });
+
+        const data = await res.json();
 
         if (res.ok) {
             document.getElementById('auth-container').classList.add('hidden');
@@ -101,9 +136,8 @@ async function verificarCodigo() {
             document.getElementById('user-display').innerText = usuarioLogueado;
 
             cargarEstudiantes();
-
         } else {
-            mostrarMensaje("Código incorrecto o expirado", "error");
+            mostrarMensaje(data.detail || "Código incorrecto", "error");
         }
 
     } catch (err) {
