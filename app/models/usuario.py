@@ -6,3 +6,4 @@ class Usuario(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     correo = Column(String, unique=True, index=True)
+    otp = Column(String, nullable=True)

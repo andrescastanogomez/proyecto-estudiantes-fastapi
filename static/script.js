@@ -1,7 +1,12 @@
 const VERSION = "1.2.0";
 
 // 🔥 URL DEL BACKEND EN RENDER
-const API_URL = "https://servicio-otp-21.onrender.com";
+// Detecta si estás en localhost o en Render
+const API_URL = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
+    ? "http://127.0.0.1:8000"
+    : "https://servicio-otp-21.onrender.com";
+
+console.log("Conectado a:", API_URL);
 
 let usuarioLogueado = "";
 let editandoId = null;
