@@ -46,59 +46,29 @@ async function registrarNuevoUsuario() {
         console.error("Error registro:", err);
     }
 }
+async function solicitarOTP() {
+    const correo = document.getElementById("correoLogin").value;
 
-// =========================
-// LOGIN - SOLICITAR OTP
-// =========================
-async function enviarCorreo() {
-    console.log("CLICK EN OTP 🔥");
+    const res = await fetch("https://TU-URL-DE-RENDER/usuarios/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ correo })
+    });
 
-    const email = document.getElementById('email').value.trim();
-    if (!email) return alert("Ingresa tu correo.");
+    const data = await res.json();
 
-    // 🔒 Evitar múltiples OTP
-    if (otpEnviado) {
-        mostrarMensaje("Ya solicitaste un código. Revisa tu correo 📩", "error");
-        return;
-    }
+    const mensaje = document.getElementById("mensajeLogin");
 
-    const btn = document.getElementById("btn-envio");
-    btn.disabled = true;
-    btn.innerText = "Enviando...";
-
-    const params = new URLSearchParams({ correo: email });
-
-    try {
-        const res = await fetch(`${API_URL}/usuarios/login?${params}`, {
-            method: 'POST'
-        });
-
-        if (res.ok) {
-            usuarioLogueado = email;
-            otpEnviado = true;
-
-            document.getElementById('step-email').classList.add('hidden');
-            document.getElementById('step-otp').classList.remove('hidden');
-
-            mostrarMensaje("Código enviado a tu correo 📩", "success");
-
-        } else {
-            const err = await res.json();
-            mostrarMensaje(err.detail || "Correo no registrado", "error");
-
-            btn.disabled = false;
-            btn.innerText = "Solicitar OTP";
-        }
-
-    } catch (err) {
-        console.error("Error login:", err);
-        mostrarMensaje("Error de conexión con el servidor", "error");
-
-        btn.disabled = false;
-        btn.innerText = "Solicitar OTP";
+    if (res.ok) {
+        mensaje.innerText = data.mensaje;
+        mensaje.style.color = "lightgreen";
+    } else {
+        mensaje.innerText = data.detail;
+        mensaje.style.color = "red";
     }
 }
-
 // =========================
 // REENVIAR OTP
 // =========================
