@@ -2,7 +2,8 @@ const VERSION = "1.2.0";
 
 // 🛠️ CONFIGURACIÓN PARA PRUEBA LOCAL
 // Mientras estés en tu PC, usa esta línea:
-const API_URL = "http://127.0.0.1:8000";
+
+const API_URL = "https://servicio-otp-21.onrender.com";
 
 // Cuando vayas a subir a Git para Render, usa esta (comenta la de arriba):
 // const API_URL = "https://servicio-otp-21.onrender.com";
