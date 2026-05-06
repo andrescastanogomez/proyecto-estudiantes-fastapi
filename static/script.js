@@ -1,12 +1,13 @@
 const VERSION = "1.2.0";
 
-// 🔥 URL DEL BACKEND EN RENDER
-// Detecta si estás en localhost o en Render
-const API_URL = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost"
-    ? "http://127.0.0.1:8000"
-    : "https://servicio-otp-21.onrender.com";
+// 🛠️ CONFIGURACIÓN PARA PRUEBA LOCAL
+// Mientras estés en tu PC, usa esta línea:
+const API_URL = "http://127.0.0.1:8000";
 
-console.log("Conectado a:", API_URL);
+// Cuando vayas a subir a Git para Render, usa esta (comenta la de arriba):
+// const API_URL = "https://servicio-otp-21.onrender.com";
+
+console.log("Conectado a local:", API_URL)
 
 let usuarioLogueado = "";
 let editandoId = null;

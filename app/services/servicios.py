@@ -21,17 +21,10 @@ def enviar_correo_otp(destinatario, otp):
 
 def crear_usuario(db: Session, correo: str):
     correo_limpio = correo.lower().strip()
-    
-    # Verificar si ya existe
-    existente = db.query(Usuario).filter(Usuario.correo == correo_limpio).first()
-    if existente:
-        return existente
-
     nuevo_usuario = Usuario(correo=correo_limpio)
     db.add(nuevo_usuario)
-    db.commit()      # <--- GUARDA FÍSICAMENTE EN EL ARCHIVO
+    db.commit()      # <--- ESTO ES LO QUE FALTA EN TU SERVIDOR
     db.refresh(nuevo_usuario)
-    print(f"✅ Usuario guardado: {correo_limpio}")
     return nuevo_usuario
 
 def generar_otp_simulado(db: Session, correo: str):
