@@ -40,10 +40,8 @@ def login(data: UsuarioLogin, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    # ✅ GENERAR OTP
     otp = servicios.generar_otp_simulado(db, correo_limpio)
 
-    # ✅ ENVIAR CORREO EN SEGUNDO PLANO
     threading.Thread(
         target=servicios.enviar_correo_otp,
         args=(correo_limpio, otp)

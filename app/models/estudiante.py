@@ -9,5 +9,4 @@ class Estudiante(Base):
     apellido = Column(String)
     carrera = Column(String)
     email = Column(String)
-    # Relación con el usuario:
     owner_id = Column(Integer, ForeignKey("usuarios.id"))

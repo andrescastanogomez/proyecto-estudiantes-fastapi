@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-# Esquema para validar los datos que vienen del Frontend
 class EstudianteSchema(BaseModel):
     nombre: str
     apellido: str
@@ -18,7 +17,6 @@ class EstudianteSchema(BaseModel):
 
 @router.get("/estudiantes")
 def listar_estudiantes(db: Session = Depends(get_db)):
-    # Importante: No debe pedir parámetros obligatorios aquí para evitar el 422
     return db.query(Estudiante).all()
 
 @router.post("/estudiantes")

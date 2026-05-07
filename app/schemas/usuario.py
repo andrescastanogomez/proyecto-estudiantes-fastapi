@@ -1,4 +1,3 @@
-# app/schemas/usuario.py
 
 from pydantic import BaseModel, EmailStr
 

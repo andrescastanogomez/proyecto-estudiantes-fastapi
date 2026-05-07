@@ -17,29 +17,24 @@
 <body class="bg-[#0f172a] text-slate-200 min-h-screen flex items-center justify-center p-4">
 
 ```
-<!-- LOGIN + REGISTRO -->
 <div id="auth-container" class="fade-in w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8">
 
-    <!-- LOGIN -->
     <div class="bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700 card-hover">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-white mb-2">Ingresar</h1>
             <p class="text-slate-400">Accede con tu código de seguridad</p>
         </div>
 
-        <!-- EMAIL -->
         <div id="step-email" class="space-y-4">
             <input type="email" id="email" placeholder="ejemplo@correo.com"
                 class="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
 
-            <!-- 🔥 AQUÍ EL CAMBIO -->
             <button onclick="solicitarOTP()" id="btn-envio"
                 class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-lg">
                 Solicitar OTP
             </button>
         </div>
 
-        <!-- OTP -->
         <div id="step-otp" class="hidden space-y-4">
             <input type="text" id="otp" placeholder="000000" maxlength="6"
                 class="w-full bg-[#0f172a] border border-teal-500/50 rounded-lg px-4 py-3 text-center text-2xl tracking-widest text-white">
@@ -58,7 +53,6 @@
         <div id="mensaje" class="mt-4 text-center text-sm"></div>
     </div>
 
-    <!-- REGISTRO -->
     <div class="bg-[#1e293b] p-8 rounded-2xl shadow-2xl border border-slate-700 border-t-4 md:border-t-0 md:border-l-4 border-teal-600">
         <div class="text-center mb-8">
             <h2 class="text-3xl font-bold text-white mb-2">Nuevo Usuario</h2>
@@ -80,7 +74,6 @@
 
 </div>
 
-<!-- PANEL CRUD -->
 <div id="step-crud" class="hidden w-full max-w-6xl fade-in">
     <div class="bg-[#1e293b] rounded-2xl shadow-2xl border border-slate-700 overflow-hidden">
 
@@ -121,7 +114,6 @@
     </div>
 </div>
 
-<!-- MODAL -->
 <div id="modal-estudiante"
     class="fixed inset-0 bg-black/80 hidden flex items-center justify-center">
 

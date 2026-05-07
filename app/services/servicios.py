@@ -4,7 +4,6 @@ from email.mime.text import MIMEText
 from sqlalchemy.orm import Session
 from app.models.usuario import Usuario
 
-# ⚠️ MUEVE ESTO A VARIABLES DE ENTORNO EN PRODUCCIÓN
 GMAIL_USER = "nacionalspod@gmail.com"
 GMAIL_PASSWORD = "jiobcdliuhblpljn"
 

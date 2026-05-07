@@ -1,26 +1,21 @@
 const VERSION = "1.2.0";
 
-// 🛠️ CONFIGURACIÓN PARA PRUEBA LOCAL
-// Mientras estés en tu PC, usa esta línea:
+
 
 const API_URL = "https://servicio-otp-21.onrender.com";
 
-// Cuando vayas a subir a Git para Render, usa esta (comenta la de arriba):
-// const API_URL = "https://servicio-otp-21.onrender.com";
+
 
 console.log("Conectado a local:", API_URL)
 
 let usuarioLogueado = "";
 let editandoId = null;
 
-// 🔥 CONTROL OTP
 let otpEnviado = false;
 
 console.log(`Sistema OTP v${VERSION} iniciado`);
 
-// =========================
-// REGISTRO
-// =========================
+
 async function registrarNuevoUsuario() {
     const email = document.getElementById('reg-email').value.trim();
     if (!email) return alert("Por favor, ingresa un correo.");
@@ -71,12 +66,11 @@ async function solicitarOTP() {
 
         const data = await res.json();
 
-        const mensaje = document.getElementById("mensaje"); // ✅ ESTE SÍ EXISTE
+        const mensaje = document.getElementById("mensaje"); 
 
         if (res.ok) {
             usuarioLogueado = correo;
 
-            // 🔥 Mostrar paso OTP
             document.getElementById("step-email").classList.add("hidden");
             document.getElementById("step-otp").classList.remove("hidden");
 
@@ -95,9 +89,7 @@ async function solicitarOTP() {
 }
 
 
-// =========================
-// REENVIAR OTP
-// =========================
+
 function reenviarOTP() {
     otpEnviado = false;
 
@@ -108,9 +100,7 @@ function reenviarOTP() {
     enviarCorreo();
 }
 
-// =========================
-// VERIFICAR OTP
-// =========================
+
 
 async function verificarCodigo() {
     const otp = document.getElementById('otp').value.trim();
@@ -145,9 +135,7 @@ async function verificarCodigo() {
     }
 }
 
-// =========================
-// CRUD ESTUDIANTES
-// =========================
+
 async function cargarEstudiantes() {
     try {
         const res = await fetch(`${API_URL}/api/estudiantes`);
@@ -235,9 +223,6 @@ async function eliminarEstudiante(id) {
     }
 }
 
-// =========================
-// UI
-// =========================
 function abrirModal() {
     editandoId = null;
     document.getElementById('modal-estudiante').classList.remove('hidden');
